@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openpyxl  # .xlsx 파일 처리를 위해 필요합니다
+import xlrd # .xls 파일 처리를 위해 필요합니다
 import datetime
 
 st.set_page_config(layout="wide")
@@ -29,19 +30,19 @@ if uploaded_file is not None:
             df = pd.read_excel(uploaded_file, engine='xlrd')
 
         # ---
-        # ⚠️ 컬럼 이름 매핑: 파일의 실제 컬럼명에 맞게 수정하세요.
+        # ⚠️ 컬럼 이름 매핑: 사용자의 컬럼명에 맞게 업데이트되었습니다.
         # ---
         컬럼_매핑 = {
-            '날짜': '날짜',
+            '날짜': '계획연월',
             '비용센터': '비용센터명',
-            '원가요소': '원가요소',
-            '비용': '비용'
+            '원가요소': '원가요소명',
+            '비용': '고정금액'
         }
         
         # 컬럼 이름이 존재하지 않으면 에러 메시지 출력
         for key, value in 컬럼_매핑.items():
             if value not in df.columns:
-                st.error(f"오류: '{value}' 컬럼이 파일에 존재하지 않습니다. `컬럼_매핑`을 수정해주세요.")
+                st.error(f"오류: '{value}' 컬럼이 파일에 존재하지 않습니다. 파일을 확인해주세요.")
                 st.stop()
 
         # 데이터프레임 전처리
@@ -75,11 +76,13 @@ if uploaded_file is not None:
             with filter_col1:
                 st.write("**비용센터**")
                 unique_비용센터 = sorted(df[컬럼_매핑['비용센터']].unique())
+                # 여러 항목을 선택할 수 있도록 multiselect 사용
                 selected_비용센터 = st.multiselect("비용센터를 선택하세요", unique_비용센터, unique_비용센터)
 
             with filter_col2:
                 st.write("**원가요소**")
                 unique_원가요소 = sorted(df[컬럼_매핑['원가요소']].unique())
+                # 여러 항목을 선택할 수 있도록 multiselect 사용
                 selected_원가요소 = st.multiselect("원가요소를 선택하세요", unique_원가요소, unique_원가요소)
             
             # 필터 적용
@@ -110,7 +113,6 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"파일을 읽는 도중 오류가 발생했습니다: {e}")
-        st.error("파일 형식이 올바른지 확인하거나, `컬럼_매핑`을 다시 확인해주세요.")
-
+        st.error("파일 형식이 올바른지 확인해주세요.")
 else:
     st.info("파일을 업로드하면 여기에 데이터 분석 결과가 표시됩니다.")
