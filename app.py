@@ -5,9 +5,29 @@ import xlrd  # .xls 파일 처리를 위해 필요합니다
 import datetime
 import plotly.express as px
 
-st.set_page_config(layout="wide")
+# ⚠️ 페이지 설정: 와이드 레이아웃과 제목, 아이콘 설정
+st.set_page_config(layout="wide", page_title="경비예산 대시보드", page_icon="📊")
 
-st.title("경비예산 시각화 대시보드")
+# ⚠️ 제목을 가운데로 정렬하는 CSS 추가
+st.markdown("""
+    <style>
+    .reportview-container .main .block-container{
+        padding-top: 2rem;
+        padding-right: 2rem;
+        padding-left: 2rem;
+        padding-bottom: 2rem;
+    }
+    .st-emotion-cache-121p55r {
+        text-align: center;
+    }
+    .st-emotion-cache-c3qg0s {
+        justify-content: center;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.title("📊 경비예산 시각화 대시보드")
+st.write("왼쪽 사이드바에서 경비예산 파일을 업로드하세요.")
 
 # ---
 # 사이드바: 파일 업로더
@@ -60,12 +80,13 @@ if uploaded_file is not None:
                 st.info(f"선택할 수 있는 데이터는 **{min_date.strftime('%Y년 %m월')}** 한 달치입니다.")
                 date_range = (min_date.date(), max_date.date())
             else:
+                # ⚠️ 슬라이더 날짜 형식 수정
                 date_range = st.slider(
                     "시작월과 종료월을 선택하세요",
                     min_value=min_date.date(),
                     max_value=max_date.date(),
                     value=(min_date.date(), max_date.date()),
-                    format="YYYY년 %m월"
+                    format="YYYY년 MM월"
                 )
 
             st.subheader("필터")
@@ -98,6 +119,7 @@ if uploaded_file is not None:
                 monthly_data = filtered_df.groupby(filtered_df[컬럼_매핑['날짜']].dt.to_period('M'))[컬럼_매핑['비용']].sum()
                 monthly_data = monthly_data.reset_index()
                 
+                # 비용을 백만원 단위로 변환
                 monthly_data[컬럼_매핑['비용']] = monthly_data[컬럼_매핑['비용']] / 1_000_000
                 monthly_data.rename(columns={컬럼_매핑['비용']: '비용 (백만원)'}, inplace=True)
 
