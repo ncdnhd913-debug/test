@@ -90,7 +90,7 @@ if uploaded_file is not None:
         filter_col1, filter_col2, chart_col = st.columns([1, 1, 3])
 
         with filter_col1:
-            with st.expander("상위 필터: 비용센터"):
+            with st.expander("비용센터 필터"):
                 unique_비용센터 = sorted(df[컬럼_매핑['비용센터']].unique())
                 selected_비용센터 = st.multiselect(
                     "비용센터를 선택하세요", unique_비용센터, unique_비용센터,
@@ -98,7 +98,7 @@ if uploaded_file is not None:
                 )
 
         with filter_col2:
-            with st.expander("하위 필터: 원가요소"):
+            with st.expander("원가요소 필터"):
                 unique_원가요소 = sorted(df[컬럼_매핑['원가요소']].unique())
                 selected_원가요소 = st.multiselect(
                     "원가요소를 선택하세요", unique_원가요소, unique_원가요소,
