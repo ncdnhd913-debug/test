@@ -86,11 +86,11 @@ if uploaded_file is not None:
                 format="YYYY년 MM월"
             )
 
-        # ⚠️ 필터와 차트를 가로로 나란히 배치
+        # 필터와 차트를 가로로 나란히 배치
         filter_col1, filter_col2, chart_col = st.columns([1, 1, 3])
 
         with filter_col1:
-            with st.expander("비용센터 필터"):
+            with st.expander("비용센터"):
                 unique_비용센터 = sorted(df[컬럼_매핑['비용센터']].unique())
                 selected_비용센터 = st.multiselect(
                     "비용센터를 선택하세요", unique_비용센터, unique_비용센터,
@@ -98,8 +98,16 @@ if uploaded_file is not None:
                 )
 
         with filter_col2:
-            with st.expander("원가요소 필터"):
-                unique_원가요소 = sorted(df[컬럼_매핑['원가요소']].unique())
+            with st.expander("원가요소"):
+                # 비용센터 필터에 따라 원가요소 목록을 동적으로 변경
+                if selected_비용센터:
+                    # 선택된 비용센터에 해당하는 원가요소만 추출
+                    filtered_원가요소_df = df[df[컬럼_매핑['비용센터']].isin(selected_비용센터)]
+                    unique_원가요소 = sorted(filtered_원가요소_df[컬럼_매핑['원가요소']].unique())
+                else:
+                    # 비용센터가 선택되지 않았을 경우 모든 원가요소 표시
+                    unique_원가요소 = sorted(df[컬럼_매핑['원가요소']].unique())
+
                 selected_원가요소 = st.multiselect(
                     "원가요소를 선택하세요", unique_원가요소, unique_원가요소,
                     key="원가요소_필터"
@@ -124,7 +132,7 @@ if uploaded_file is not None:
                 monthly_data[컬럼_매핑['비용']] = monthly_data[컬럼_매핑['비용']] / 1_000_000
                 monthly_data.rename(columns={컬럼_매핑['비용']: '비용 (백만원)'}, inplace=True)
 
-                # ⚠️ 날짜 형식을 "YYYY년 MM월"로 변환
+                # 날짜 형식을 "YYYY년 MM월"로 변환
                 monthly_data['월'] = pd.to_datetime(monthly_data[컬럼_매핑['날짜']].astype(str)).dt.strftime('%Y년 %m월')
                 
                 fig = px.bar(
@@ -136,7 +144,7 @@ if uploaded_file is not None:
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
-        # ⚠️ 데이터프레임을 왼쪽으로 밀착시켜 표시
+        # 데이터프레임을 왼쪽으로 밀착시켜 표시
         st.subheader("필터링된 데이터프레임")
         st.write(f"총 데이터 수: {len(filtered_df)}개")
         st.dataframe(filtered_df, use_container_width=True)
