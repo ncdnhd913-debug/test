@@ -47,13 +47,11 @@ if uploaded_file is not None:
             st.warning("업로드된 파일에 유효한 날짜 데이터가 없습니다.")
             st.stop()
 
-        # ⚠️ 전체 콘텐츠를 가운데로 정렬하기 위한 컬럼 설정
         col1, col_main, col3 = st.columns([1, 4, 1])
         
         with col_main:
             st.header("데이터 분석")
             
-            # --- 날짜 필터 ---
             st.subheader("기간 선택")
             min_date = df[컬럼_매핑['날짜']].min()
             max_date = df[컬럼_매핑['날짜']].max()
@@ -70,7 +68,6 @@ if uploaded_file is not None:
                     format="YYYY년 %m월"
                 )
 
-            # --- 상위/하위 필터 (Expander 사용) ---
             st.subheader("필터")
 
             with st.expander("상위 필터: 비용센터"):
@@ -97,5 +94,30 @@ if uploaded_file is not None:
             if filtered_df.empty:
                 st.warning("선택한 조건에 해당하는 데이터가 없습니다. 필터를 조정해 주세요.")
             else:
-                # --- 시각화 (백만원 단위로 변환) ---
-                st.subheader("월별 비용
+                st.subheader("월별 비용 추이")
+                monthly_data = filtered_df.groupby(filtered_df[컬럼_매핑['날짜']].dt.to_period('M'))[컬럼_매핑['비용']].sum()
+                monthly_data = monthly_data.reset_index()
+                
+                monthly_data[컬럼_매핑['비용']] = monthly_data[컬럼_매핑['비용']] / 1_000_000
+                monthly_data.rename(columns={컬럼_매핑['비용']: '비용 (백만원)'}, inplace=True)
+
+                monthly_data[컬럼_매핑['날짜']] = monthly_data[컬럼_매핑['날짜']].astype(str)
+                
+                fig = px.bar(
+                    monthly_data, 
+                    x=컬럼_매핑['날짜'], 
+                    y='비용 (백만원)',
+                    labels={'x': '날짜', 'y': '비용 (백만원)'},
+                    title="월별 비용 추이 (단위: 백만원)"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+                st.subheader("필터링된 데이터프레임")
+                st.write(f"총 데이터 수: {len(filtered_df)}개")
+                st.dataframe(filtered_df, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"파일을 읽는 도중 오류가 발생했습니다: {e}")
+        st.error("파일 형식을 확인하거나 컬럼명을 다시 확인해주세요.")
+else:
+    st.info("파일을 업로드하면 여기에 데이터 분석 결과가 표시됩니다.")
